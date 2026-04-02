@@ -72,8 +72,8 @@ export default function ResultScreen({
       if (score >= 8) icons.push({ Icon: Gift, label: 'Gift Pack' });
       if (score >= 9) icons.push({ Icon: Award, label: 'Round 2 Qualified' });
     } else {
-      if (score >= 6) icons.push({ Icon: Plane, label: 'Educational Tour' });
-      if (score >= 8) icons.push({ Icon: Trophy, label: 'Scholarship' });
+      if (score >= 8) icons.push({ Icon: Plane, label: 'Educational Tour' });
+      if (score >= 9) icons.push({ Icon: Trophy, label: 'Scholarship' });
     }
 
     return icons;
