@@ -27,8 +27,8 @@ export default function ResultScreen({
 
   useEffect(() => {
     const shouldCelebrate =
-      (round === 1 && score >= 3) ||
-      (round === 2 && score >= 6);
+      (round === 1 && score >= 1) ||
+      (round === 2 && score >= 9);
 
     if (shouldCelebrate) {
       const duration = 3000;
@@ -39,7 +39,7 @@ export default function ResultScreen({
         return Math.random() * (max - min) + min;
       }
 
-      const interval = setInterval(function() {
+      const interval = setInterval(function () {
         const timeLeft = animationEnd - Date.now();
 
         if (timeLeft <= 0) {
@@ -68,12 +68,35 @@ export default function ResultScreen({
     const icons = [];
 
     if (round === 1) {
-      if (score >= 3) icons.push({ Icon: GraduationCap, label: 'Free Workshop' });
-      if (score >= 8) icons.push({ Icon: Gift, label: 'Gift Pack' });
-      if (score >= 9) icons.push({ Icon: Award, label: 'Round 2 Qualified' });
+      // Everyone in Round 1 gets a Free Workshop
+      if (score >= 1) {
+        icons.push({ Icon: GraduationCap, label: 'Free Workshop' });
+      }
+
+      // 8 and above get Gift Pack too
+      if (score >= 8) {
+        icons.push({ Icon: Gift, label: 'Gift Pack' });
+      }
+
+      // 9 and above qualify for Round 2
+      if (score >= 9) {
+        icons.push({ Icon: Award, label: 'Round 2 Qualified' });
+      }
     } else {
-      if (score >= 9) icons.push({ Icon: Plane, label: 'Educational Tour' });
-      if (score >= 10) icons.push({ Icon: Trophy, label: 'Scholarship' });
+      // Round 2: 0–8 keep Round 1 rewards
+      if (score <= 8) {
+        icons.push({ Icon: GraduationCap, label: 'Free Workshop' });
+      }
+
+      // 9 gets Educational Tour
+      if (score >= 9) {
+        icons.push({ Icon: Plane, label: 'Educational Tour' });
+      }
+
+      // 10 gets Scholarship also
+      if (score >= 10) {
+        icons.push({ Icon: Trophy, label: 'Scholarship' });
+      }
     }
 
     return icons;
