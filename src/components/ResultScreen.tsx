@@ -1,7 +1,12 @@
 import { useEffect } from 'react';
 import { Award, Gift, Plane, GraduationCap, Trophy } from 'lucide-react';
-import { getRound1Message, getRound2Message } from '../utils/quizUtils';
+import { getRound1Message } from '../utils/quizUtils';
 import confetti from 'canvas-confetti';
+
+interface RewardItem {
+  Icon: any;
+  label: string;
+}
 
 interface ResultScreenProps {
   round: number;
@@ -11,6 +16,7 @@ interface ResultScreenProps {
   qualifiedForRound2?: boolean;
   onContinueToRound2?: () => void;
   onFinish?: () => void;
+  round1Score?: number;
 }
 
 export default function ResultScreen({
@@ -20,10 +26,84 @@ export default function ResultScreen({
   reward,
   qualifiedForRound2,
   onContinueToRound2,
-  onFinish
+  onFinish,
+  round1Score = 0
 }: ResultScreenProps) {
-  const message = round === 1 ? getRound1Message(score) : getRound2Message(score);
   const percentage = (score / totalQuestions) * 100;
+
+  const getRound1Rewards = (
+    scoreValue: number,
+    includeQualification = true
+  ): RewardItem[] => {
+    const icons: RewardItem[] = [];
+
+    if (scoreValue >= 1) {
+      icons.push({ Icon: GraduationCap, label: 'Free Workshop' });
+    }
+
+    if (scoreValue >= 8) {
+      icons.push({ Icon: Gift, label: 'Gift Pack' });
+    }
+
+    if (includeQualification && scoreValue >= 9) {
+      icons.push({ Icon: Award, label: 'Round 2 Qualified' });
+    }
+
+    return icons;
+  };
+
+  const getRewardIcons = (): RewardItem[] => {
+    if (round === 1) {
+      return getRound1Rewards(score, true);
+    }
+
+    const icons: RewardItem[] = [...getRound1Rewards(round1Score, false)];
+
+    if (score >= 9) {
+      icons.push({ Icon: Plane, label: 'Educational Tour' });
+    }
+
+    if (score >= 10) {
+      icons.push({ Icon: Trophy, label: 'Scholarship' });
+    }
+
+    return icons;
+  };
+
+  const getDisplayMessage = () => {
+    if (round === 1) {
+      return getRound1Message(score);
+    }
+
+    if (score <= 8) {
+      return 'Round 2 completed. Please claim the prizes you won in Round 1.';
+    }
+
+    if (score === 9) {
+      return 'Excellent! You won an Educational Tour in addition to your Round 1 prizes!';
+    }
+
+    if (score === 10) {
+      return 'Outstanding! You won an Educational Tour and a Scholarship in addition to your Round 1 prizes!';
+    }
+
+    return 'Round completed successfully!';
+  };
+
+  const getRewardTitle = () => {
+    if (round === 2 && score <= 8) {
+      return 'Prizes You Won in Round 1';
+    }
+
+    if (round === 2 && score >= 9) {
+      return 'Your Total Rewards';
+    }
+
+    return 'Your Rewards';
+  };
+
+  const message = getDisplayMessage();
+  const rewardIcons = getRewardIcons();
 
   useEffect(() => {
     const shouldCelebrate =
@@ -71,40 +151,6 @@ export default function ResultScreen({
     }
   }, [round, score]);
 
-  const getRewardIcons = () => {
-    const icons: { Icon: any; label: string }[] = [];
-
-    if (round === 1) {
-      // Everyone in Round 1 gets Free Workshop
-      if (score >= 1) {
-        icons.push({ Icon: GraduationCap, label: 'Free Workshop' });
-      }
-
-      // Score 8 and above gets Gift Pack
-      if (score >= 8) {
-        icons.push({ Icon: Gift, label: 'Gift Pack' });
-      }
-
-      // Score 9 and 10 qualifies for Round 2
-      if (score >= 9) {
-        icons.push({ Icon: Award, label: 'Round 2 Qualified' });
-      }
-    } else {
-      // Round 2 only shows NEW rewards earned in Round 2
-      if (score >= 9) {
-        icons.push({ Icon: Plane, label: 'Educational Tour' });
-      }
-
-      if (score >= 10) {
-        icons.push({ Icon: Trophy, label: 'Scholarship' });
-      }
-    }
-
-    return icons;
-  };
-
-  const rewardIcons = getRewardIcons();
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-600 via-red-700 to-red-900 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
@@ -145,7 +191,9 @@ export default function ResultScreen({
 
             {rewardIcons.length > 0 && (
               <div className="mb-8">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">Your Rewards</h3>
+                <h3 className="text-xl font-bold text-gray-800 mb-4">
+                  {getRewardTitle()}
+                </h3>
 
                 <div className="flex flex-wrap justify-center gap-4">
                   {rewardIcons.map(({ Icon, label }, index) => (
