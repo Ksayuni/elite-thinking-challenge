@@ -52,24 +52,23 @@ export default function ResultScreen({
     return icons;
   };
 
-const getRewardIcons = (): RewardItem[] => {
-  if (round === 1) {
-    return getRound1Rewards(score, true);
-  }
+  const getRewardIcons = (): RewardItem[] => {
+    if (round === 1) {
+      return getRound1Rewards(score, true);
+    }
 
-  const icons: RewardItem[] = [...getRound1Rewards(round1Score, false)];
+    const icons: RewardItem[] = [...getRound1Rewards(round1Score, false)];
 
-  if (score === 9) {
-    icons.push({ Icon: Plane, label: 'Educational Tour' });
-  }
+    if (score === 9) {
+      icons.push({ Icon: Plane, label: 'Educational Tour' });
+    }
 
-  if (score === 10) {
-    icons.push({ Icon: Plane, label: 'Educational Tour' });
-    icons.push({ Icon: Trophy, label: 'Scholarship' });
-  }
+    if (score === 10) {
+      icons.push({ Icon: Plane, label: 'Educational Tour' });
+      icons.push({ Icon: Trophy, label: 'Scholarship' });
+    }
 
-  return icons;
-};
+    return icons;
   };
 
   const getDisplayMessage = () => {
