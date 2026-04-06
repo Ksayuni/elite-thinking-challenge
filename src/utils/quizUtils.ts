@@ -48,40 +48,40 @@ export function calculateAge(dob: string): number {
 
 export function getRound1Reward(score: number): string {
   if (score >= 9) {
-    return 'Workshop + Gift Pack + Round 2 Qualified';
+    return 'Free Workshop + Gift Pack + Round 2 Qualified';
   } else if (score >= 8) {
-    return 'Workshop + Gift Pack';
-  } else if (score >= 3) {
+    return 'Free Workshop + Gift Pack';
+  } else if (score >= 1) {
     return 'Free Workshop';
   }
   return 'No Reward';
 }
 
 export function getRound2Reward(score: number): string {
-  if (score >= 8) {
+  if (score === 10) {
     return 'Educational Tour + Scholarship';
-  } else if (score >= 6) {
+  } else if (score === 9) {
     return 'Educational Tour';
   }
-  return 'Participation';
+  return 'No additional reward';
 }
 
 export function getRound1Message(score: number): string {
   if (score >= 9) {
-    return 'Congratulations! You won a Workshop + Gift Pack + You are selected for Round 2!';
+    return 'Congratulations! You won a Free Workshop and Gift Pack, and you are selected for Round 2!';
   } else if (score >= 8) {
-    return 'Well done! Workshop + Gift Pack unlocked!';
-  } else if (score >= 3) {
+    return 'Well done! You won a Free Workshop and Gift Pack!';
+  } else if (score >= 1) {
     return 'Good job! You won a Free Workshop!';
   }
-  return 'Good attempt! Keep practicing.';
+  return 'Thank you for participating.';
 }
 
 export function getRound2Message(score: number): string {
-  if (score >= 8) {
-    return 'Congratulations! You won a Scholarship + Educational Tour!';
-  } else if (score >= 6) {
+  if (score === 10) {
+    return 'Outstanding! You won an Educational Tour and a Scholarship!';
+  } else if (score === 9) {
     return 'Excellent! You won an Educational Tour!';
   }
-  return 'Good effort! Keep improving.';
+  return 'Thank you for participating!';
 }
