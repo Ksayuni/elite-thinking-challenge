@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import RegistrationForm from './components/RegistrationForm';
 import Countdown from './components/Countdown';
 import Quiz from './components/Quiz';
@@ -195,6 +195,7 @@ function App() {
           totalQuestions={10}
           reward={round2Reward}
           onFinish={handleFinish}
+          round1Score={round1Score}
         />
       );
 
@@ -214,22 +215,28 @@ function App() {
                 className="h-16 object-contain bg-white px-3 py-1 rounded"
               />
             </div>
+
             <h1 className="text-3xl font-bold text-gray-800 mb-4">
               Thank You for Participating!
             </h1>
+
             <p className="text-lg text-gray-600 mb-6">
               Your results have been recorded. We will contact you soon regarding your rewards.
             </p>
+
             <div className="bg-red-50 rounded-xl p-6 space-y-2">
               <p className="text-gray-700">
                 <span className="font-semibold">Round 1 Score:</span> {round1Score}/10
               </p>
+
               <p className="text-gray-700">
                 <span className="font-semibold">Round 2 Score:</span> {round2Score}/10
               </p>
+
               <p className="text-gray-700">
                 <span className="font-semibold">Round 1 Reward:</span> {round1Reward}
               </p>
+
               <p className="text-gray-700">
                 <span className="font-semibold">Round 2 Reward:</span> {round2Reward}
               </p>
