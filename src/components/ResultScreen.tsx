@@ -31,7 +31,6 @@ export default function ResultScreen({
 }: ResultScreenProps) {
   const percentage = (score / totalQuestions) * 100;
 
-  // 🔹 Round 1 rewards
   const getRound1Rewards = (
     scoreValue: number,
     includeQualification = true
@@ -53,16 +52,13 @@ export default function ResultScreen({
     return icons;
   };
 
-  // 🔹 FINAL reward logic
   const getRewardIcons = (): RewardItem[] => {
     if (round === 1) {
       return getRound1Rewards(score, true);
     }
 
-    // Round 2 → always include Round 1 rewards
     const icons: RewardItem[] = [...getRound1Rewards(round1Score, false)];
 
-    // Add ONLY if eligible
     if (score >= 9) {
       icons.push({ Icon: Plane, label: 'Educational Tour' });
     }
@@ -74,7 +70,6 @@ export default function ResultScreen({
     return icons;
   };
 
-  // 🔹 FIXED MESSAGE LOGIC
   const getDisplayMessage = () => {
     if (round === 1) {
       return getRound1Message(score);
@@ -211,6 +206,37 @@ export default function ResultScreen({
                       </span>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {round === 1 && qualifiedForRound2 && onContinueToRound2 && (
+              <div className="space-y-4">
+                <div className="bg-green-50 border-2 border-green-500 rounded-xl p-4 mb-6">
+                  <p className="text-green-800 font-semibold">
+                    Congratulations! You are qualified for Round 2
+                  </p>
+                </div>
+
+                <button
+                  onClick={onContinueToRound2}
+                  className="w-full bg-red-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-red-700 transition"
+                >
+                  Continue to Round 2
+                </button>
+              </div>
+            )}
+
+            {round === 1 && !qualifiedForRound2 && (
+              <div className="space-y-4">
+                <div className="bg-yellow-50 border-2 border-yellow-500 rounded-xl p-4 mb-6">
+                  <p className="text-yellow-800 font-semibold">
+                    You need at least 9/10 to qualify for Round 2
+                  </p>
+                </div>
+
+                <div className="mt-4 text-gray-600">
+                  <p>Thank you for participating!</p>
                 </div>
               </div>
             )}
