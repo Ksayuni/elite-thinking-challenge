@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { RegistrationData, ALStream } from '../types';
 import { calculateAge } from '../utils/quizUtils';
 import { supabase } from '../lib/supabase';
+
 interface RegistrationFormProps {
   onComplete: (participantId: string) => void;
 }
@@ -11,6 +12,7 @@ export default function RegistrationForm({ onComplete }: RegistrationFormProps) 
     full_name: '',
     dob: '',
     school: '',
+    grade: '',
     al_stream: 'Mathematics',
     contact_no: '',
     email: ''
@@ -45,13 +47,30 @@ export default function RegistrationForm({ onComplete }: RegistrationFormProps) 
     }
   };
 
+  const formatContactNumber = (value: string) => {
+    const cleaned = value.replace(/\s/g, '');
+
+    if (cleaned.startsWith('+94')) return cleaned;
+    if (cleaned.startsWith('94')) return `+${cleaned}`;
+    if (cleaned.startsWith('0')) return `+94${cleaned.substring(1)}`;
+
+    return cleaned;
+  };
+
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.full_name.trim()) newErrors.full_name = 'Full name is required';
     if (!formData.dob) newErrors.dob = 'Date of birth is required';
     if (!formData.school.trim()) newErrors.school = 'School is required';
-    if (!formData.contact_no.trim()) newErrors.contact_no = 'Contact number is required';
+    if (!formData.grade) newErrors.grade = 'Grade is required';
+
+    if (!formData.contact_no.trim()) {
+      newErrors.contact_no = 'Contact number is required';
+    } else if (!/^\+94\d{9}$/.test(formData.contact_no)) {
+      newErrors.contact_no = 'Contact number must be in +94 format. Example: +94771234567';
+    }
+
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Invalid email format';
@@ -64,6 +83,14 @@ export default function RegistrationForm({ onComplete }: RegistrationFormProps) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const formattedContactNo = formatContactNumber(formData.contact_no);
+    setFormData({ ...formData, contact_no: formattedContactNo });
+
+    const updatedFormData = {
+      ...formData,
+      contact_no: formattedContactNo
+    };
+
     if (!validateForm()) return;
 
     setIsSubmitting(true);
@@ -72,11 +99,11 @@ export default function RegistrationForm({ onComplete }: RegistrationFormProps) 
       const { data: existing } = await supabase
         .from('participants')
         .select('id, email, contact_no')
-        .or(`email.eq.${formData.email},contact_no.eq.${formData.contact_no}`)
+        .or(`email.eq.${updatedFormData.email},contact_no.eq.${updatedFormData.contact_no}`)
         .maybeSingle();
 
       if (existing) {
-        if (existing.email === formData.email) {
+        if (existing.email === updatedFormData.email) {
           setErrors({ ...errors, email: 'This email is already registered' });
         } else {
           setErrors({ ...errors, contact_no: 'This contact number is already registered' });
@@ -87,7 +114,7 @@ export default function RegistrationForm({ onComplete }: RegistrationFormProps) 
 
       const { data, error } = await supabase
         .from('participants')
-        .insert([formData])
+        .insert([updatedFormData])
         .select()
         .single();
 
@@ -170,6 +197,29 @@ export default function RegistrationForm({ onComplete }: RegistrationFormProps) 
 
                 <div className="group">
                   <label className="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">
+                    Grade <span className="text-red-600">*</span>
+                  </label>
+                  <select
+                    value={formData.grade}
+                    onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
+                    className="w-full px-5 py-3.5 bg-gradient-to-br from-red-50 to-orange-100 border-2 border-red-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white outline-none transition-all duration-200 text-gray-800 font-medium"
+                  >
+                    <option value="">Select Grade</option>
+                    <option value="9">Grade 9</option>
+                    <option value="10">Grade 10</option>
+                    <option value="11">Grade 11</option>
+                    <option value="12">Grade 12</option>
+                    <option value="13">Grade 13</option>
+                  </select>
+                  {errors.grade && (
+                    <p className="text-red-600 text-sm mt-1.5 font-medium">{errors.grade}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="group">
+                  <label className="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">
                     A/L Stream <span className="text-red-600">*</span>
                   </label>
                   <select
@@ -184,9 +234,7 @@ export default function RegistrationForm({ onComplete }: RegistrationFormProps) 
                     <option value="Technology">Technology</option>
                   </select>
                 </div>
-              </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
                 <div className="group">
                   <label className="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">
                     Contact Number <span className="text-red-600">*</span>
@@ -194,15 +242,22 @@ export default function RegistrationForm({ onComplete }: RegistrationFormProps) 
                   <input
                     type="tel"
                     value={formData.contact_no}
-                    onChange={(e) => setFormData({ ...formData, contact_no: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        contact_no: formatContactNumber(e.target.value)
+                      })
+                    }
                     className="w-full px-5 py-3.5 bg-gradient-to-br from-red-50 to-orange-100 border-2 border-red-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white outline-none transition-all duration-200 text-gray-800 font-medium"
-                    placeholder="Your contact number"
+                    placeholder="+94771234567"
                   />
                   {errors.contact_no && (
                     <p className="text-red-600 text-sm mt-1.5 font-medium">{errors.contact_no}</p>
                   )}
                 </div>
+              </div>
 
+              <div className="grid md:grid-cols-2 gap-6">
                 <div className="group">
                   <label className="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">
                     Email Address <span className="text-red-600">*</span>
