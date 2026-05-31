@@ -3,6 +3,7 @@ export interface Participant {
   full_name: string;
   dob: string;
   school: string;
+  grade: string;
   al_stream: string;
   contact_no: string;
   email: string;
@@ -45,11 +46,13 @@ export interface UserQuestionAssignment {
 }
 
 export type ALStream = 'Mathematics' | 'Biology' | 'Commerce' | 'Arts' | 'Technology';
+export type Grade = '9' | '10' | '11' | '12' | '13';
 
 export interface RegistrationData {
   full_name: string;
   dob: string;
   school: string;
+  grade: Grade | '';
   al_stream: ALStream;
   contact_no: string;
   email: string;
