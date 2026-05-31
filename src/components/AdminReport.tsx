@@ -8,6 +8,7 @@ interface Participant {
   email: string;
   contact_no: string;
   school: string;
+  grade: string;
   al_stream: string;
   dob: string;
   round1_score: number | null;
@@ -28,7 +29,7 @@ export default function AdminReport() {
     round: 'all',
     minScore: '',
     stream: 'all',
-    rewardType: 'all'
+    grade: 'all'
   });
 
   useEffect(() => {
@@ -59,33 +60,29 @@ export default function AdminReport() {
     let filtered = [...participants];
 
     if (filters.round === 'round1') {
-      filtered = filtered.filter(p => p.round1_completed);
+      filtered = filtered.filter((p) => p.round1_completed);
     } else if (filters.round === 'round2') {
-      filtered = filtered.filter(p => p.round2_completed);
+      filtered = filtered.filter((p) => p.round2_completed);
     } else if (filters.round === 'qualified') {
-      filtered = filtered.filter(p => p.qualified_for_round2);
+      filtered = filtered.filter((p) => p.qualified_for_round2);
     }
 
     if (filters.minScore) {
-      const minScore = parseInt(filters.minScore);
-      if (filters.round === 'round1' || filters.round === 'all') {
-        filtered = filtered.filter(p => (p.round1_score || 0) >= minScore);
-      } else if (filters.round === 'round2') {
-        filtered = filtered.filter(p => (p.round2_score || 0) >= minScore);
+      const minScore = parseInt(filters.minScore, 10);
+
+      if (filters.round === 'round2') {
+        filtered = filtered.filter((p) => (p.round2_score || 0) >= minScore);
+      } else {
+        filtered = filtered.filter((p) => (p.round1_score || 0) >= minScore);
       }
     }
 
     if (filters.stream !== 'all') {
-      filtered = filtered.filter(p => p.al_stream === filters.stream);
+      filtered = filtered.filter((p) => p.al_stream === filters.stream);
     }
 
-    if (filters.rewardType !== 'all') {
-      filtered = filtered.filter(p => {
-        if (filters.round === 'round2') {
-          return p.round2_reward === filters.rewardType;
-        }
-        return p.round1_reward === filters.rewardType;
-      });
+    if (filters.grade !== 'all') {
+      filtered = filtered.filter((p) => p.grade === filters.grade);
     }
 
     setFilteredParticipants(filtered);
@@ -97,6 +94,7 @@ export default function AdminReport() {
       'Email',
       'Contact',
       'School',
+      'Grade',
       'Stream',
       'DOB',
       'Round 1 Score',
@@ -107,32 +105,34 @@ export default function AdminReport() {
       'Registration Date'
     ];
 
-    const csvData = filteredParticipants.map(p => [
+    const csvData = filteredParticipants.map((p) => [
       p.full_name,
       p.email,
       p.contact_no,
       p.school,
+      p.grade || 'N/A',
       p.al_stream,
       p.dob,
-      p.round1_score || 'N/A',
-      p.round1_reward || 'N/A',
+      p.round1_score ?? 'N/A',
+      p.round1_reward ?? 'N/A',
       p.qualified_for_round2 ? 'Yes' : 'No',
-      p.round2_score || 'N/A',
-      p.round2_reward || 'N/A',
+      p.round2_score ?? 'N/A',
+      p.round2_reward ?? 'N/A',
       new Date(p.created_at).toLocaleString()
     ]);
 
     const csv = [
       headers.join(','),
-      ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+      ...csvData.map((row) => row.map((cell) => `"${cell}"`).join(','))
     ].join('\n');
 
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `quiz-report-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   if (isLoading) {
@@ -166,19 +166,19 @@ export default function AdminReport() {
             <div className="bg-green-50 rounded-lg p-4">
               <div className="text-sm text-green-600 font-medium mb-1">Round 1 Completed</div>
               <div className="text-3xl font-bold text-green-900">
-                {participants.filter(p => p.round1_completed).length}
+                {participants.filter((p) => p.round1_completed).length}
               </div>
             </div>
             <div className="bg-orange-50 rounded-lg p-4">
               <div className="text-sm text-orange-600 font-medium mb-1">Qualified for Round 2</div>
               <div className="text-3xl font-bold text-orange-900">
-                {participants.filter(p => p.qualified_for_round2).length}
+                {participants.filter((p) => p.qualified_for_round2).length}
               </div>
             </div>
             <div className="bg-red-50 rounded-lg p-4">
               <div className="text-sm text-red-600 font-medium mb-1">Round 2 Completed</div>
               <div className="text-3xl font-bold text-red-900">
-                {participants.filter(p => p.round2_completed).length}
+                {participants.filter((p) => p.round2_completed).length}
               </div>
             </div>
           </div>
@@ -188,6 +188,7 @@ export default function AdminReport() {
               <Filter className="w-5 h-5 text-gray-600" />
               <h2 className="text-lg font-semibold text-gray-800">Filters</h2>
             </div>
+
             <div className="grid md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Round</label>
@@ -208,10 +209,10 @@ export default function AdminReport() {
                 <input
                   type="number"
                   min="0"
-                  max="10"
+                  max="100"
                   value={filters.minScore}
                   onChange={(e) => setFilters({ ...filters, minScore: e.target.value })}
-                  placeholder="e.g., 7"
+                  placeholder="e.g., 50"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -233,19 +234,18 @@ export default function AdminReport() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Reward Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Grade</label>
                 <select
-                  value={filters.rewardType}
-                  onChange={(e) => setFilters({ ...filters, rewardType: e.target.value })}
+                  value={filters.grade}
+                  onChange={(e) => setFilters({ ...filters, grade: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="all">All Rewards</option>
-                  <option value="5% Scholarship + ACCA certificate">5% Scholarship + ACCA certificate</option>
-                  <option value="ACCA certificate">ACCA certificate</option>
-                  <option value="10% Scholarship + ACCA T-shirt">10% Scholarship + ACCA T-shirt</option>
-                  <option value="ACCA T-shirt">ACCA T-shirt</option>
-                  <option value="15% Scholarship + ACCA gift hamper">15% Scholarship + ACCA gift hamper</option>
-                  <option value="20% Scholarship + ACCA gift hamper">20% Scholarship + ACCA gift hamper</option>
+                  <option value="all">All Grades</option>
+                  <option value="9">Grade 9</option>
+                  <option value="10">Grade 10</option>
+                  <option value="11">Grade 11</option>
+                  <option value="12">Grade 12</option>
+                  <option value="13">Grade 13</option>
                 </select>
               </div>
             </div>
@@ -259,7 +259,9 @@ export default function AdminReport() {
                 <tr>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Email</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Contact</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">School</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Grade</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Stream</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">R1 Score</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">R1 Reward</th>
@@ -267,10 +269,11 @@ export default function AdminReport() {
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">R2 Reward</th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-gray-200">
                 {filteredParticipants.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={10} className="px-4 py-8 text-center text-gray-500">
                       No participants match the selected filters
                     </td>
                   </tr>
@@ -279,16 +282,18 @@ export default function AdminReport() {
                     <tr key={participant.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3 text-sm text-gray-900">{participant.full_name}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{participant.email}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{participant.contact_no}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{participant.school}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{participant.grade || '-'}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{participant.al_stream}</td>
                       <td className="px-4 py-3 text-center text-sm font-semibold text-gray-900">
-                        {participant.round1_score !== null ? `${participant.round1_score}/10` : '-'}
+                        {participant.round1_score !== null ? participant.round1_score : '-'}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
                         {participant.round1_reward || '-'}
                       </td>
                       <td className="px-4 py-3 text-center text-sm font-semibold text-gray-900">
-                        {participant.round2_score !== null ? `${participant.round2_score}/10` : '-'}
+                        {participant.round2_score !== null ? participant.round2_score : '-'}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
                         {participant.round2_reward || '-'}
